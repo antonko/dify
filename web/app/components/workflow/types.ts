@@ -7,7 +7,7 @@ import type {
 import type { Resolution, TransferMethod } from '@/types/app'
 import type { ToolDefaultValue } from '@/app/components/workflow/block-selector/types'
 import type { VarType as VarKindType } from '@/app/components/workflow/nodes/tool/types'
-import type { FileResponse, NodeTracing } from '@/types/workflow'
+import type { FileResponse, NodeTracing, PanelProps } from '@/types/workflow'
 import type { Collection, Tool } from '@/app/components/tools/types'
 import type { ChatVarType } from '@/app/components/workflow/panel/chat-variable-panel/type'
 import type {
@@ -116,6 +116,7 @@ export type NodeProps<T = unknown> = { id: string; data: CommonNodeType<T> }
 export type NodePanelProps<T> = {
   id: string
   data: CommonNodeType<T>
+  panelProps: PanelProps
 }
 export type Edge = ReactFlowEdge<CommonEdgeType>
 
@@ -135,6 +136,7 @@ export type Variable = {
     variable: string
   }
   value_selector: ValueSelector
+  value_type?: VarType
   variable_type?: VarKindType
   value?: string
   options?: string[]
@@ -147,6 +149,7 @@ export type EnvironmentVariable = {
   name: string
   value: any
   value_type: 'string' | 'number' | 'secret'
+  description: string
 }
 
 export type ConversationVariable = {
@@ -198,7 +201,9 @@ export type InputVar = {
   hint?: string
   options?: string[]
   value_selector?: ValueSelector
+  getVarValueFromDependent?: boolean
   hide?: boolean
+  isFileItem?: boolean
 } & Partial<UploadFileSetting>
 
 export type ModelConfig = {
@@ -259,6 +264,7 @@ export enum VarType {
   arrayObject = 'array[object]',
   arrayFile = 'array[file]',
   any = 'any',
+  arrayAny = 'array[any]',
 }
 
 export enum ValueType {
@@ -297,6 +303,7 @@ export type Block = {
 
 export type NodeDefault<T> = {
   defaultValue: Partial<T>
+  defaultRunInputData?: Record<string, any>
   getAvailablePrevNodes: (isChatMode: boolean) => BlockEnum[]
   getAvailableNextNodes: (isChatMode: boolean) => BlockEnum[]
   checkValid: (payload: T, t: any, moreDataForCheckValid?: any) => { isValid: boolean; errorMessage?: string }
@@ -325,6 +332,7 @@ export enum NodeRunningStatus {
   Failed = 'failed',
   Exception = 'exception',
   Retry = 'retry',
+  Stopped = 'stopped',
 }
 
 export type OnNodeAdd = (
@@ -360,7 +368,6 @@ export type WorkflowRunningData = {
   message_id?: string
   conversation_id?: string
   result: {
-    sequence_number?: number
     workflow_id?: string
     inputs?: string
     process_data?: string
@@ -383,9 +390,9 @@ export type WorkflowRunningData = {
 
 export type HistoryWorkflowData = {
   id: string
-  sequence_number: number
   status: string
   conversation_id?: string
+  finished_at?: number
 }
 
 export enum ChangeType {
